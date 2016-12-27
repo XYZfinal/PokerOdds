@@ -94,11 +94,12 @@
        (cond
          [(and (empty? list) (= accumulator 4)) true]
          [(empty? list) false]
-         [(= value (card-value (first list)))
+         [(equal? value (card-value (first list)))
           (four-value? (rest list) value (add1 accumulator))]
          [else (four-value? (rest list) value accumulator)]))]
     
     (cond
+      [(empty? list) false]
       [(four-value? list (card-value (first list)) 0) true]
       [else (four? (rest list))])))
 
@@ -156,30 +157,39 @@
        (cond
          [(and (empty? list) (= accumulator 3)) true]
          [(empty? list) false]
-         [(= value (card-value (first list)))
+         [(equal? value (card-value (first list)))
           (three-value? (rest list) value (add1 accumulator))]
          [else (three-value? (rest list) value accumulator)]))]
     
     (cond
+      [(empty? list) false]
       [(three-value? list (card-value (first list)) 0) true]
       [else (three? (rest list))])))
 
-(define (two-pair? list)
-  ...)
-
-(define (pair? list)
-  (local
-    [(define (pair-value? list value accumulator)
+(define (pair-value? list value accumulator)
        (cond
          [(and (empty? list) (= accumulator 2)) true]
          [(empty? list) false]
-         [(= value (card-value (first list)))
+         [(equal? value (card-value (first list)))
           (pair-value? (rest list) value (add1 accumulator))]
-         [else (pair-value? (rest list) value accumulator)]))]
-    
+         [else (pair-value? (rest list) value accumulator)]))
+
+(define (two-pair? list)
+  (local
+    [(define (two-pair-acc? list acc)
+       (cond
+         [(and (empty? list) (< 1 acc)) true]
+         [(empty? list) false]
+         [(pair-value? list (card-value (first list)) 0) (add1 acc)]
+         [else (two-pair-acc? (rest list) acc)]))]
+
+    (two-pair-acc? list 0)))
+
+(define (pair? list)
     (cond
+      [(empty? list) false]
       [(pair-value? list (card-value (first list)) 0) true]
-      [else (pair? (rest list))])))
+      [else (pair? (rest list))]))
 
 ;; (odds? hand field shown-cards) produces the probability of acquiring every type of hand according to
 ;;    the player current hand, the cards shown on the table (field) and the cards that are already
