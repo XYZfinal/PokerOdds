@@ -9,13 +9,17 @@
 ;; ******************************************
 ;;
 
+;; ==================================================
+;; Structure definitions:
+;; ==================================================
+
 (define-struct card (value suit))
 ;; value is either an Int or a Sym ('A 'K 'Q 'J)
 ;; suit is either 'spades, 'hearts, 'clubs, or 'diamonds
 
-(define-struct chance (type probability))
-;; type is one of 'SF, '4, 'FH, 'F, 'S, '3, '2P, 'P, 'HC
-;; Probability is a Num between 0 to 1
+;; ==================================================
+;; Constant definitions:
+;; ==================================================
 
 (define priority (list 'SF '4 'FH 'F 'S '3 '2P 'P 'HC))
 ;; Where: 'SF is a straight flush
@@ -81,12 +85,25 @@
                    (make-card 'A 'clubs)
                    (make-card 'A 'diamonds)))
 
+(define deck-number 52)
 
+;; ==================================================
+;; Global helper function definitions:
+;; ==================================================
 
-(define deck-number 54)
+;; (straight-flush? list) consumes a list of cards and determines
+;;      if in the list there is a straight flush available
+;; straight-flush?: (listof Card) -> Bool
+;; Requires: In this case, the list always contains 7 cards
 
 (define (straight-flush? list)
   (and (straight? list) (flush? list)))
+
+
+;; (four? list) consumes a list of cards and determines
+;;      if in the list there is a four of a kind available
+;; four?: (listof Card) -> Bool
+;; Requires: In this case, the list always contains 7 cards
 
 (define (four? list)
   (local
@@ -103,8 +120,18 @@
       [(four-value? list (card-value (first list)) 0) true]
       [else (four? (rest list))])))
 
+;; (full-house? list) consumes a list of cards and determines
+;;      if in the list there is a full house available
+;; full-house?: (listof Card) -> Bool
+;; Requires: In this case, the list always contains 7 cards
+
 (define (full-house? list)
   (and (three? list) (pair? list)))
+
+;; (flush? list) consumes a list of cards and determines
+;;      if in the list there is a flush available
+;; flush?: (listof Card) -> Bool
+;; Requires: In this case, the list always contains 7 cards
 
 (define (flush? list)
   (local
@@ -120,6 +147,11 @@
         (flush-suit? list 'hearts 0)
         (flush-suit? list 'clubs 0)
         (flush-suit? list 'diamonds 0))))
+
+;; (straight? list) consumes a list of cards and determines
+;;      if in the list there is a straight available
+;; straight?: (listof Card) -> Bool
+;; Requires: In this case, the list always contains 7 cards
 
 (define (straight? list)
   (local
@@ -151,6 +183,11 @@
       [(straight-acc? (card-value (first list)) list 0) true]
       [else (straight? (rest list))])))
 
+;; (three? list) consumes a list of cards and determines
+;;      if in the list there is a three of a kind available
+;; three?: (listof Card) -> Bool
+;; Requires: In this case, the list always contains 7 cards
+
 (define (three? list)
   (local
     [(define (three-value? list value accumulator)
@@ -166,6 +203,11 @@
       [(three-value? list (card-value (first list)) 0) true]
       [else (three? (rest list))])))
 
+;; (pair-value? list) consumes a list of cards and determines
+;;      if in the list there is a pair of the consumed value 
+;; four?: (listof Card) (anyof Sym Int) Nat -> Bool
+;; Requires: In this case, the list always contains 7 cards
+
 (define (pair-value? list value accumulator)
        (cond
          [(and (empty? list) (= accumulator 2)) true]
@@ -173,6 +215,11 @@
          [(equal? value (card-value (first list)))
           (pair-value? (rest list) value (add1 accumulator))]
          [else (pair-value? (rest list) value accumulator)]))
+
+;; (two-pair? list) consumes a list of cards and determines
+;;      if in the list there is a two-pair available
+;; two-pair?: (listof Card) -> Bool
+;; Requires: In this case, the list always contains 7 cards
 
 (define (two-pair? list)
   (local
@@ -185,11 +232,22 @@
 
     (two-pair-acc? list 0)))
 
+;; (pair? list) consumes a list of cards and determines
+;;      if in the list there is a pair available
+;; pair?: (listof Card) -> Bool
+;; Requires: In this case, the list always contains 7 cards
+
 (define (pair? list)
     (cond
       [(empty? list) false]
       [(pair-value? list (card-value (first list)) 0) true]
       [else (pair? (rest list))]))
+
+
+
+;; ==================================================
+;; Main function definition
+;; ==================================================
 
 ;; (odds? hand field shown-cards) produces the probability of acquiring every type of hand according to
 ;;    the player current hand, the cards shown on the table (field) and the cards that are already
@@ -203,6 +261,7 @@
   (local
     [(define (used-deck shown-cards)
        (filter (lambda (card) (not (member? card shown-cards))) deck))
+     
 
      
              
@@ -214,7 +273,9 @@
 
 
 
-
+;; ==================================================
+;; Test
+;; ==================================================
 
 (check-expect (straight? (list (make-card 'A 'random)
                                (make-card '3 'random)
