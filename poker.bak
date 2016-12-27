@@ -85,134 +85,106 @@
 
 (define deck-number 54)
 
-(define (straight-flush? list)
-  (and (straight? list) (flush? list)))
-
-(define (four? list)
-  (local
-    [(define (four-value? list value accumulator)
-       (cond
-         [(and (empty? list) (= accumulator 4)) true]
-         [(empty? list) false]
-         [(= value (card-value (first list)))
-          (four-value? (rest list) value (add1 accumulator))]
-         [else (four-value? (rest list) value accumulator)]))]
-    
-    (cond
-      [(four-value? list (card-value (first list)) 0) true]
-      [else (four? (rest list))])))
-
-(define (full-house? list)
-  (and (three? list) (pair? list)))
-
-(define (flush? list)
-  (local
-    [(define (flush-suit? list suit accumulator)
-       (cond
-         [(and (empty? list) (= accumulator 5)) true]
-         [(empty? list) false]
-         [(symbol=? suit (card-suit (first list)))
-          (flush-suit? (rest list) suit (add1 accumulator))]
-         [else (flush-suit? (rest list) suit accumulator)]))]
-    
-    (or (flush-suit? list 'spades 0)
-        (flush-suit? list 'hearts 0)
-        (flush-suit? list 'clubs 0)
-        (flush-suit? list 'diamonds 0))))
-
-(define (straight? list)
-  (local
-    [(define (straight-acc? value list acc)
-       (cond
-         [(= acc 5) true]
-         [(= value 14) false]
-         [(card-member? (cond
-                          [(= value 1) 'A]
-                          [(= value 11) 'J]
-                          [(= value 12) 'Q]
-                          [(= value 13) 'K]
-                          [(= value 14) 'A]
-                          [else value]) list) (straight-acc? (add1 value) list (add1 acc))]
-         [else false]))                      
-
-     (define (card-member? value list)
-       (cond
-         [(empty? list) false]
-         [(equal? value (card-value (first list))) true]
-         [else (card-member? value (rest list))]))]
-
-    (cond
-      [(empty? list) false]
-      [(symbol? (card-value (first list)))
-       (cond
-         [(and (symbol=? 'A (card-value (first list))) (straight-acc? 1 list 0)) true]
-         [else (straight? (rest list))])]
-      [(straight-acc? (card-value (first list)) list 0) true]
-      [else (straight? (rest list))])))
-
-(define (three? list)
-  (local
-    [(define (three-value? list value accumulator)
-       (cond
-         [(and (empty? list) (= accumulator 3)) true]
-         [(empty? list) false]
-         [(= value (card-value (first list)))
-          (three-value? (rest list) value (add1 accumulator))]
-         [else (three-value? (rest list) value accumulator)]))]
-    
-    (cond
-      [(three-value? list (card-value (first list)) 0) true]
-      [else (three? (rest list))])))
-
-(define (two-pair? list)
-  ...)
-
-(define (pair? list)
-  (local
-    [(define (pair-value? list value accumulator)
-       (cond
-         [(and (empty? list) (= accumulator 2)) true]
-         [(empty? list) false]
-         [(= value (card-value (first list)))
-          (pair-value? (rest list) value (add1 accumulator))]
-         [else (pair-value? (rest list) value accumulator)]))]
-    
-    (cond
-      [(pair-value? list (card-value (first list)) 0) true]
-      [else (pair? (rest list))])))
-
 ;; (odds? hand field shown-cards) produces the probability of acquiring every type of hand according to
 ;;    the player current hand, the cards shown on the table (field) and the cards that are already
 ;;    shown and that cannot be drawn from the dealer.
 ;; odds?: (list Card Card) (listof Card) (listof Card) -> (listof Chance Chance Chance Chance Chance Chance Chance Chance Chance)
 
 (list 'SF '4 'FH 'F 'S '3 '2P 'P 'HC)
-
+'spades, 'hearts, 'clubs, or 'diamonds
 
 (define (odds? hand field shown-cards)
   (local
     [(define (used-deck shown-cards)
-       (filter (lambda (card) (not (member? card shown-cards))) deck))
+       (filter (lambda (card) (not (member? card shown-card))) deck))
 
+     (define (straight-flush? list)
+       (and (straight? list) (flush? list)))
      
+     (define (four? list)
+       (local
+         [(define (four-value? list value accumulator)
+            (cond
+              [(and (empty? list) (= accumulator 4)) true]
+              [(empty? list) false]
+              [(= value (card-value (first list)))
+               (four-value? (rest list) value (add1 accumulator))]
+              [else (four-value? (rest list) value accumulator)]))]
+
+         (cond
+           [(four-value? list (card-value (first list)) 0) true]
+           [else (four? (rest list))])))
+
+     (define (full-house? list)
+       (and (three? list) (pair? list)))
+
+     (define (flush? list)
+       (local
+         [(define (flush-suit? list suit accumulator)
+            (cond
+              [(and (empty? list) (= accumulator 5)) true]
+              [(empty? list) false]
+              [(symbol=? suit (card-suit (first list)))
+               (flush-suit? (rest list) suit (add1 accumulator))]
+              [else (flush-suit? (rest list) suit accumulator)]))]
+
+         (or (flush-suit? list 'spades 0)
+             (flush-suit? list 'hearts 0)
+             (flush-suit? list 'clubs 0)
+             (flush-suit? list 'diamonds 0))))
+
+     (define (straight? list)
+       ...)
+
+     (define (three? list)
+       (local
+         [(define (three-value? list value accumulator)
+            (cond
+              [(and (empty? list) (= accumulator 3)) true]
+              [(empty? list) false]
+              [(= value (card-value (first list)))
+               (three-value? (rest list) value (add1 accumulator))]
+              [else (three-value? (rest list) value accumulator)]))]
+
+         (cond
+           [(three-value? list (card-value (first list)) 0) true]
+           [else (three? (rest list))])))
+
+     (define (two-pair? list)
+       ...)
+
+     (define (pair? list)
+       (local
+         [(define (pair-value? list value accumulator)
+            (cond
+              [(and (empty? list) (= accumulator 2)) true]
+              [(empty? list) false]
+              [(= value (card-value (first list)))
+               (pair-value? (rest list) value (add1 accumulator))]
+              [else (pair-value? (rest list) value accumulator)]))]
+
+         (cond
+           [(pair-value? list (card-value (first list)) 0) true]
+           [else (pair? (rest list))])))
              
          
      ]
 
-    ...))
+    (list (make-chance 'SF (SF-odds? ...))
+          (make-chance '4 (4-odds? ...))
+          (make-chance 'FH (FH-odds? ...))
+          (make-chance 'F (F-odds? ...))
+          (make-chance 'S (S-odds? ...))
+          (make-chance '3 (3-odds? ...))
+          (make-chance '2P (2P-odds? ...))
+          (make-chance 'P (P-odds? ...))
+          (make-chance 'HC (HC-odds? ...)))))
 
 
 
 
 
 
-(check-expect (straight? (list (make-card 'A 'random)
-                               (make-card '3 'random)
-                               (make-card '5 'random)
-                               (make-card '3 'random)
-                               (make-card '2 'random)
-                               (make-card 'K 'random)
-                               (make-card '4 'random))) true)
 
 
 
