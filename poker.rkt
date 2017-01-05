@@ -32,6 +32,17 @@
 ;;        'p is a pair
 ;;        'HC is a high card
 
+(define possibilities (list (list 'SF 0)
+                            (list '4 0)
+                            (list 'FH 0)
+                            (list 'F 0)
+                            (list 'S 0)
+                            (list '3 0)
+                            (list '2P 0)
+                            (list 'P 0)
+                            (list 'HC 0)
+                            (list 'ALL 0)))
+
 (define deck (list (make-card 2 'spades)
                    (make-card 2 'hearts)
                    (make-card 2 'clubs)
@@ -261,6 +272,52 @@
   (local
     [(define (used-deck shown-cards)
        (filter (lambda (card) (not (member? card shown-cards))) deck))
+     (define (insert-one hand-strength possibilities)
+       (foldr  (lambda (element temp)
+                 (cond
+                   [(equal? hand-strength (first element)) (append (list hand-strength (add1 (second element))) temp)]
+                   [else (append (list element) temp)]))
+               empty possibilities))
+
+     (define (assemble-5 list deck possibilities)
+       (cond
+         [(empty? deck) possibilities]
+         [else (assemble-5 list (rest deck) (assemble-4 (cons (first deck) list) (rest deck) possibilities))]))
+
+     (define (assemble-4 list deck possibilities)
+       (cond
+         [(empty? deck) possibilities]
+         [else (assemble-4 list (rest deck) (assemble-3 (cons (first deck) list) (rest deck) possibilities))]))
+
+     (define (assemble-3 list deck possibilities)
+       (cond
+         [(empty? deck) possibilities]
+         [else (assemble-3 list (rest deck) (assemble-2 (cons (first deck) list) (rest deck) possibilities))]))
+
+     (define (assemble-2 list deck possibilities)
+       (cond
+         [(empty? deck) possibilities]
+         [else (assemble-2 list (rest deck) (assemble-1 (cons (first deck) list) (rest deck) possibilities))]))
+
+     (define (assemble-1 list deck possibilities)
+       (cond
+         [(empty? deck) possibilities]
+         [else (insert-one (hand-strength (cons (first deck) list)) possibilities)]))
+     
+     (define (hand-strength hand)
+       (cond
+         [(straight-flush? hand) 'SF]
+         [(four? hand) '4]
+         [(full-house? hand) 'FH]
+         [(flush? hand) 'F]
+         [(straight? hand) 'S]
+         [(three? hand) '3]
+         [(two-pair? hand) '2P]
+         [(pair? hand) 'P]
+         [else 'HC]))
+              
+
+     
      
 
      
