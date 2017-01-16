@@ -272,14 +272,28 @@
   (local
     [(define (used-deck shown-cards)
        (filter (lambda (card) (not (member? card shown-cards))) deck))
+     
      (define (insert-one hand-strength possibilities)
        (foldr  (lambda (element temp)
                  (cond
-                   [(equal? value (first element)) (append (list value (add1 (second element))) temp)]
+                   [(equal? hand-strength (first element))
+                    (append (list hand-strength (add1 (second element))) temp)]
                    [else (append (list element) temp)]))
                empty possibilities))
-     (define (all-cases choices possibilities hand field)
-       (- 7 (length (append hand field)))
+
+      
+     
+     (define (hand-strength hand)
+       (cond
+         [(straight-flush? hand) 'SF]
+         [(four? hand) '4]
+         [(full-house? hand) 'FH]
+         [(flush? hand) 'F]
+         [(straight? hand) 'S]
+         [(three? hand) '3]
+         [(two-pair? hand) '2P]
+         [(pair? hand) 'P]
+         [else 'HC]))
               
 
      

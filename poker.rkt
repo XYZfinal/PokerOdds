@@ -21,7 +21,7 @@
 ;; Constant definitions:
 ;; ==================================================
 
-(define priority (list 'SF '4 'FH 'F 'S '3 '2P 'P 'HC))
+(define priority (list 'SF '4s 'FH 'F 'S '3s '2P 'P 'HC))
 ;; Where: 'SF is a straight flush
 ;;        '4 is a 4-of-a-kind
 ;;        'FH is a full-house
@@ -33,15 +33,14 @@
 ;;        'HC is a high card
 
 (define possibilities (list (list 'SF 0)
-                            (list '4 0)
+                            (list '4s 0)
                             (list 'FH 0)
                             (list 'F 0)
                             (list 'S 0)
-                            (list '3 0)
+                            (list '3s 0)
                             (list '2P 0)
                             (list 'P 0)
-                            (list 'HC 0)
-                            (list 'ALL 0)))
+                            (list 'HC 0)))
 
 (define deck (list (make-card 2 'spades)
                    (make-card 2 'hearts)
@@ -238,7 +237,7 @@
        (cond
          [(and (empty? list) (< 1 acc)) true]
          [(empty? list) false]
-         [(pair-value? list (card-value (first list)) 0) (add1 acc)]
+         [(pair-value? list (card-value (first list)) 0) (two-pair-acc? list (add1 acc))]
          [else (two-pair-acc? (rest list) acc)]))]
 
     (two-pair-acc? list 0)))
@@ -265,86 +264,62 @@
 ;;    shown and that cannot be drawn from the dealer.
 ;; odds?: (list Card Card) (listof Card) (listof Card) -> (listof Chance Chance Chance Chance Chance Chance Chance Chance Chance)
 
-(list 'SF '4 'FH 'F 'S '3 '2P 'P 'HC)
-
-
 (define (odds? hand field shown-cards)
   (local
     [(define (used-deck shown-cards)
        (filter (lambda (card) (not (member? card shown-cards))) deck))
+     
      (define (insert-one hand-strength possibilities)
-       (foldr  (lambda (element temp)
-                 (cond
-                   [(equal? hand-strength (first element)) (append (list hand-strength (add1 (second element))) temp)]
-                   [else (append (list element) temp)]))
-               empty possibilities))
+       (cond
+         [(symbol=? hand-strength (first (first possibilities)))
+          (cons (list hand-strength (add1 (second (first possibilities))))
+                (rest possibilities))]
+         [else (cons (first possibilities)
+                     (insert-one hand-strength (rest possibilities)))]))
 
-     (define (assemble-5 list deck possibilities)
+     (define (assemble order hand deck possibilities)
        (cond
          [(empty? deck) possibilities]
-         [else (assemble-5 list (rest deck) (assemble-4 (cons (first deck) list) (rest deck) possibilities))]))
-
-     (define (assemble-4 list deck possibilities)
-       (cond
-         [(empty? deck) possibilities]
-         [else (assemble-4 list (rest deck) (assemble-3 (cons (first deck) list) (rest deck) possibilities))]))
-
-     (define (assemble-3 list deck possibilities)
-       (cond
-         [(empty? deck) possibilities]
-         [else (assemble-3 list (rest deck) (assemble-2 (cons (first deck) list) (rest deck) possibilities))]))
-
-     (define (assemble-2 list deck possibilities)
-       (cond
-         [(empty? deck) possibilities]
-         [else (assemble-2 list (rest deck) (assemble-1 (cons (first deck) list) (rest deck) possibilities))]))
-
-     (define (assemble-1 list deck possibilities)
-       (cond
-         [(empty? deck) possibilities]
-         [else (insert-one (hand-strength (cons (first deck) list)) possibilities)]))
+         [(= order 0) (insert-one (hand-strength hand) possibilities)]
+         [else (assemble order hand (rest deck)
+                         (assemble (sub1 order) (cons (first deck) hand) (rest deck) possibilities))]))      
      
      (define (hand-strength hand)
        (cond
          [(straight-flush? hand) 'SF]
-         [(four? hand) '4]
+         [(four? hand) '4s]
          [(full-house? hand) 'FH]
          [(flush? hand) 'F]
          [(straight? hand) 'S]
-         [(three? hand) '3]
+         [(three? hand) '3s]
          [(two-pair? hand) '2P]
          [(pair? hand) 'P]
          [else 'HC]))
-              
 
-     
-     
+     (define (needed-order hand)
+       (- 7 (length hand)))]
 
-     
-             
-         
-     ]
-
-    ...))
-
-
-
+    (assemble (needed-order (append hand field)) (append hand field) (used-deck (append shown-cards field hand)) possibilities)))
 
 ;; ==================================================
 ;; Test
 ;; ==================================================
 
 (check-expect (straight? (list (make-card 'A 'random)
-                               (make-card '3 'random)
-                               (make-card '5 'random)
-                               (make-card '3 'random)
-                               (make-card '2 'random)
+                               (make-card 3 'random)
+                               (make-card 5 'random)
+                               (make-card 3 'random)
+                               (make-card 2 'random)
                                (make-card 'K 'random)
-                               (make-card '4 'random))) true)
+                               (make-card 4 'random))) true)
 
 
 
-
+(odds? (list (make-card 2 'spades)
+             (make-card 9 'hearts))
+       (list (make-card 2 'diamond)
+             (make-card 4 'hearts))
+       (list))
 
 
 
